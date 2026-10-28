@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>LUVI BI | Consultoria Power BI e Dados</title>
+<meta name="description" content="Dashboards em Power BI que transformam seus dados em decisões. Consultoria de BI para acompanhar vendas, financeiro e estoque do computador ou do celular.">
+<meta name="theme-color" content="#060A12">
+<meta property="og:type" content="website">
+<meta property="og:title" content="LUVI BI | Consultoria Power BI e Dados">
+<meta property="og:description" content="Dashboards em Power BI que transformam seus dados em decisões.">
+<meta property="og:locale" content="pt_BR">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20viewBox='0%200%20245%20310'%20xmlns='http://www.w3.org/2000/svg'%3E%3Crect%20x='5'%20y='120'%20width='55'%20height='150'%20fill='%23F3F6FB'/%3E%3Crect%20x='90'%20y='70'%20width='55'%20height='200'%20fill='%23F3F6FB'/%3E%3Crect%20x='175'%20y='35'%20width='55'%20height='235'%20fill='%23F3F6FB'/%3E%3Cpath%20d='M30,100%20L115,50%20L200,15'%20stroke='%23F0C811'%20stroke-width='9'%20stroke-linecap='round'%20fill='none'/%3E%3Ccircle%20cx='30'%20cy='100'%20r='16'%20fill='%23F0C811'/%3E%3Ccircle%20cx='115'%20cy='50'%20r='16'%20fill='%23F0C811'/%3E%3Ccircle%20cx='200'%20cy='15'%20r='16'%20fill='%23F0C811'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+/* ==========================================================================
+   LUVI BI — kit visual v1.2
+   Tokens + componentes de dados + movimento. Cole este bloco em qualquer
+   ferramenta; as classes começam com .lv- para não colidir com o resto.
+   Regra de ouro: o dado manda. Todo efeito aqui tem uma função e some
+   quando a pessoa pede menos movimento.
+   ========================================================================== */
+
+:root{
+  /* marca */
+  --lv-navy:#0A467C; --lv-navy-light:#1C72B8; --lv-navy-pale:#2F8FD6;
+  --lv-gold:#F0C811; --lv-gold-soft:rgba(240,200,17,.16); --lv-gold-glow:rgba(240,200,17,.45);
+  /* superfícies */
+  --lv-canvas:#060A12; --lv-surface:#0D1420; --lv-raised:#131C2C;
+  /* bordas */
+  --lv-line:rgba(148,180,214,.14); --lv-line-strong:rgba(148,180,214,.26);
+  /* texto (o terciário foi clareado na v1.1 para passar contraste AA) */
+  --lv-ink:#F3F6FB; --lv-ink2:#A9B8CC; --lv-ink3:#7A8AA2;
+  /* estado */
+  --lv-danger:#E2685C; --lv-danger-soft:rgba(226,104,92,.16);
+  /* tipografia */
+  --lv-sans:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --lv-mono:'JetBrains Mono',ui-monospace,monospace;
+  /* raios */
+  --lv-r-xs:4px; --lv-r-sm:8px; --lv-r-md:12px; --lv-r-lg:18px;
+  /* movimento */
+  --lv-ease:cubic-bezier(.2,0,0,1);
+  --lv-spring:cubic-bezier(.34,1.5,.64,1);
+  --lv-t-fast:140ms; --lv-t-base:220ms; --lv-t-slow:450ms;
+  /* sombra: só no hover, só navy */
+  --lv-sh-md:0 12px 32px -12px rgba(10,70,124,.5);
+  /* foto da operação */
+  --lv-foto-opacidade:.11;
+}
+
+*,*::before,*::after{box-sizing:border-box}
+html{height:100%}
+body.lv{
+  margin:0; min-height:100dvh; background:var(--lv-canvas); color:var(--lv-ink);
+  font-family:var(--lv-sans); font-feature-settings:'tnum' 1,'cv11' 1;
+  -webkit-font-smoothing:antialiased; line-height:1.5;
+  padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+}
+
+/* ---- fundo: a foto da operação -------------------------------------------
+   Camada fixa, sem interação, muito discreta. A máscara radial a dissolve no
+   canvas para o lado esquerdo e para o topo ficarem lisos; os cards são
+   opacos, então a foto só aparece entre eles e nunca atrás de um número. */
+.lv-fundo{
+  position:fixed; inset:0; z-index:0; pointer-events:none;
+  background:var(--lv-foto,none) 68% 72%/cover no-repeat;
+  opacity:var(--lv-foto-opacidade);
+  -webkit-mask-image:radial-gradient(ellipse 95% 85% at 72% 74%,#000 18%,transparent 82%);
+          mask-image:radial-gradient(ellipse 95% 85% at 72% 74%,#000 18%,transparent 82%);
+}
+.lv-conteudo{position:relative; z-index:1}
+
+/* ---- cabeçalho ---------------------------------------------------------- */
+.lv-cab{
+  position:sticky; top:0; z-index:20; background:var(--lv-surface);
+  border-bottom:1px solid var(--lv-line);
+}
+.lv-cab::after{ /* linha de acento do relatório */
+  content:""; position:absolute; left:0; right:0; bottom:-1px; height:2px; opacity:.55;
+  background:linear-gradient(90deg,var(--lv-navy-pale),var(--lv-gold),var(--lv-navy-pale));
+}
+.lv-cab-in{
+  max-width:1200px; margin:0 auto; padding:12px 20px; display:flex; align-items:center; gap:14px;
+}
+.lv-marca{display:flex; align-items:center; gap:11px; min-width:0}
+.lv-marca svg{width:24px; height:auto; flex:0 0 auto; filter:drop-shadow(0 2px 8px rgba(240,200,17,.2))}
+.lv-marca b{display:block; font-size:16px; font-weight:700; letter-spacing:-.015em; line-height:1.15}
+.lv-marca span{display:block; font-size:12px; color:var(--lv-ink3); line-height:1.2}
+.lv-esp{margin-left:auto}
+
+.lv-badge{
+  font:500 10px/1.4 var(--lv-mono); color:var(--lv-gold); padding:1px 5px;
+  border:1px solid rgba(240,200,17,.3); background:var(--lv-gold-soft); border-radius:var(--lv-r-xs);
+}
+/* selo da operação (v1.2): identifica a unidade atendida no cabeçalho */
+.lv-op{
+  display:inline-flex; align-items:center; gap:7px; white-space:nowrap;
+  font:700 14px/1.2 var(--lv-sans); color:var(--lv-ink);
+  padding:5px 11px; border-radius:99px; border:1px solid rgba(240,200,17,.35); background:rgba(240,200,17,.08);
+}
+.lv-op i{width:7px; height:7px; border-radius:50%; background:var(--lv-gold); box-shadow:0 0 8px var(--lv-gold)}
+.lv-btn-ic{
+  width:36px; height:36px; border-radius:50%; display:grid; place-items:center; cursor:pointer;
+  background:var(--lv-surface); color:var(--lv-ink2); border:1px solid var(--lv-line);
+  transition:background var(--lv-t-fast) var(--lv-ease),color var(--lv-t-fast) var(--lv-ease),transform var(--lv-t-fast) var(--lv-ease);
+}
+.lv-btn-ic svg{width:17px; height:17px}
+.lv-btn-ic:hover{background:var(--lv-raised); color:var(--lv-gold)}
+.lv-btn-ic:active{transform:scale(.92)}
+:where(.lv-btn-ic,.lv-card[tabindex],a.lv-card,button.lv-card):focus-visible{
+  outline:2px solid var(--lv-gold); outline-offset:2px;
+}
+
+/* ---- página ------------------------------------------------------------- */
+.lv-pag{max-width:1200px; margin:0 auto; padding:24px 20px 48px}
+@media (min-width:640px){.lv-pag{padding:36px 28px 56px}}
+.lv-titulo{font-size:27px; font-weight:700; letter-spacing:-.025em; line-height:1.2; margin:0 0 6px}
+@media (min-width:1024px){.lv-titulo{font-size:30px}}
+.lv-sub{font-size:14.5px; line-height:1.55; color:var(--lv-ink2); margin:0; max-width:60ch}
+.lv-secao{
+  display:flex; align-items:center; gap:10px; margin:32px 0 12px;
+  font-size:11.5px; font-weight:600; letter-spacing:.07em; text-transform:uppercase; color:var(--lv-ink3);
+}
+.lv-secao svg{width:46px; height:16px; flex:0 0 auto}
+.lv-grade{display:grid; gap:12px}
+.lv-g-kpi{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+.lv-g-2{grid-template-columns:1fr}
+@media (min-width:900px){.lv-g-2{grid-template-columns:1.55fr 1fr}.lv-g-2b{grid-template-columns:1fr 1.25fr}}
+.lv-g-nav{grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
+
+/* ---- card --------------------------------------------------------------- */
+.lv-card{
+  text-decoration:none; position:relative; overflow:hidden; background:var(--lv-surface); color:inherit;
+  border:1px solid var(--lv-line); border-radius:var(--lv-r-md); padding:18px;
+  font:inherit; text-align:left;
+}
+.lv-card-t{font-size:15px; font-weight:600; margin:0}
+.lv-card-d{font-size:12.5px; color:var(--lv-ink3); margin:2px 0 14px}
+
+/* ---- KPI ---------------------------------------------------------------- */
+.lv-kpi{display:flex; flex-direction:column; gap:10px; min-height:118px}
+.lv-kpi-topo{display:flex; align-items:center; gap:10px}
+.lv-ic{
+  width:34px; height:34px; border-radius:var(--lv-r-sm); background:var(--lv-navy); color:#fff;
+  display:grid; place-items:center; flex:0 0 auto;
+}
+.lv-ic svg{width:17px; height:17px}
+.lv-kpi-rot{font-size:11px; font-weight:600; letter-spacing:.07em; text-transform:uppercase; color:var(--lv-ink3)}
+.lv-kpi-val{font-size:30px; font-weight:700; letter-spacing:-.02em; line-height:1.1; margin-top:auto}
+.lv-kpi-pe{display:flex; align-items:center; gap:8px; font-size:12px; color:var(--lv-ink3)}
+.lv-var{display:inline-flex; align-items:center; gap:3px; font-weight:600; font-size:12px}
+.lv-var svg{width:13px; height:13px}
+.lv-var.sobe{color:var(--lv-gold)}
+.lv-var.desce{color:var(--lv-danger)}
+.lv-kpi-anel{display:flex; align-items:center; gap:14px}
+.lv-kpi-anel .lv-kpi-val{margin-top:0}
+
+/* ---- card clicável: o único lugar com "vida" no hover --------------------
+   Sobe 2px, ganha a sombra navy, e um fio dourado de 2px se desenha no topo.
+   O ícone dá um leve pulo. Nada disso mexe no número. */
+/* v1.2: .lv-vivo também funciona fora do .lv-card. O elemento recorta o que
+   está dentro (overflow + isolation), então o fio dourado do topo acompanha
+   os cantos arredondados em vez de sair reto por cima da curva. */
+.lv-vivo{position:relative; overflow:hidden; isolation:isolate}
+.lv-vivo{
+  cursor:pointer;
+  transition:transform var(--lv-t-base) var(--lv-ease),border-color var(--lv-t-base) var(--lv-ease),box-shadow var(--lv-t-base) var(--lv-ease);
+}
+.lv-vivo::before{
+  content:""; z-index:2; pointer-events:none; position:absolute; left:0; right:0; top:0; height:2px; background:var(--lv-gold);
+  transform:scaleX(0); transform-origin:0 50%; transition:transform var(--lv-t-slow) var(--lv-ease);
+}
+.lv-vivo .lv-ic{transition:transform var(--lv-t-base) var(--lv-spring)}
+.lv-vivo:hover{transform:translateY(-2px); border-color:var(--lv-line-strong); box-shadow:var(--lv-sh-md)}
+.lv-vivo:hover::before{transform:scaleX(1)}
+.lv-vivo:hover .lv-ic{transform:scale(1.08) rotate(-3deg)}
+.lv-vivo:active{transform:translateY(0) scale(.985)}
+
+/* ---- card de navegação com o traço de luz (LED) --------------------------- */
+.lv-nav{display:flex; align-items:center; gap:14px; min-height:72px; padding:16px; border-radius:var(--lv-r-lg)}
+.lv-nav .lv-ic{width:42px; height:42px}
+.lv-nav .lv-ic svg{width:18px; height:18px}
+.lv-nav-tx{min-width:0; flex:1}
+.lv-nav-tx b{display:block; font-size:15px; font-weight:600}
+.lv-nav-tx span{display:block; font-size:12.5px; color:var(--lv-ink3); white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.lv-seta{width:17px; height:17px; color:var(--lv-ink3); flex:0 0 auto; transition:transform var(--lv-t-base) var(--lv-ease),color var(--lv-t-base) var(--lv-ease)}
+.lv-nav:hover .lv-seta{transform:translateX(3px); color:var(--lv-gold)}
+.lv-beam{position:absolute; inset:0; width:100%; height:100%; pointer-events:none; overflow:visible}
+.lv-beam rect{
+  fill:none; stroke:var(--lv-gold); stroke-width:1.5; stroke-dasharray:14 86; opacity:.55;
+  filter:drop-shadow(0 0 3px rgba(240,200,17,.4)); transition:opacity var(--lv-t-base) var(--lv-ease);
+}
+.lv-nav:hover .lv-beam rect{opacity:1}
+
+/* ---- gráficos ------------------------------------------------------------ */
+.lv-svg{display:block; width:100%; height:auto; overflow:visible}
+.lv-svg text{fill:var(--lv-ink3); font:500 10.5px var(--lv-sans)}
+.lv-svg .lv-rotv{fill:var(--lv-ink); font-weight:600; font-size:11px}
+.lv-svg .lv-grade-l{stroke:var(--lv-line); stroke-width:1}
+.lv-bar{fill:var(--lv-navy-pale); transform-box:fill-box; transform-origin:50% 100%}
+.lv-bar.destaque{fill:var(--lv-gold)}
+.lv-bar.parcial{fill:none; stroke:var(--lv-navy-pale); stroke-width:1.5; stroke-dasharray:4 3}
+.lv-hit{fill:transparent}
+.lv-svg:hover .lv-bar{opacity:.45}
+.lv-svg .lv-grp:hover .lv-bar{opacity:1; filter:brightness(1.12)}
+.lv-svg .lv-grp:hover .lv-bar.parcial{filter:none}
+.lv-trilho{fill:none; stroke:var(--lv-raised)}
+.lv-ring,.lv-arc{fill:none; stroke-linecap:round}
+.lv-arc{transition:opacity var(--lv-t-base) var(--lv-ease),filter var(--lv-t-base) var(--lv-ease)}
+.lv-svg:hover .lv-arc{opacity:.5}
+.lv-svg .lv-arc:hover{opacity:1; filter:brightness(1.12)}
+.lv-disco{position:relative; flex:0 0 auto}
+.lv-disco .lv-meio{position:absolute; inset:0; display:grid; place-items:center; text-align:center; pointer-events:none}
+.lv-meio b{display:block; font-size:22px; font-weight:700; letter-spacing:-.02em; line-height:1.1}
+.lv-meio small{display:block; font-size:11px; color:var(--lv-ink3)}
+.lv-rosca{display:flex; align-items:center; gap:20px; flex-wrap:wrap}
+.lv-leg{display:flex; flex-direction:column; gap:10px; flex:1; min-width:140px; font-size:12.5px; color:var(--lv-ink2)}
+.lv-leg div{display:flex; align-items:center; gap:9px}
+.lv-leg i{width:9px; height:9px; border-radius:3px; flex:0 0 auto}
+.lv-leg b{margin-left:auto; color:var(--lv-ink); font-weight:600}
+
+/* ranking horizontal */
+.lv-rank{display:flex; flex-direction:column; gap:2px}
+.lv-rank-l{
+  display:grid; grid-template-columns:minmax(90px,1.1fr) 2fr 84px; align-items:center; gap:12px;
+  padding:7px 8px; margin:0 -8px; border-radius:var(--lv-r-sm); font-size:12.5px;
+  transition:background var(--lv-t-fast) var(--lv-ease),opacity var(--lv-t-base) var(--lv-ease);
+}
+.lv-rank-l .n{color:var(--lv-ink2); white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.lv-rank-l .t{height:6px; border-radius:3px; background:var(--lv-raised); overflow:hidden}
+.lv-rank-l .t i{display:block; height:100%; border-radius:3px; background:var(--lv-navy-pale); transform-origin:0 50%}
+.lv-rank-l .v{font-weight:600; text-align:right; white-space:nowrap}
+.lv-rank:hover .lv-rank-l{opacity:.55}
+.lv-rank .lv-rank-l:hover{opacity:1; background:var(--lv-raised)}
+.lv-rank .lv-rank-l:hover .n{color:var(--lv-ink)}
+
+/* tabela */
+.lv-tab-wrap{overflow-x:auto; margin:0 -18px; padding:0 18px}
+.lv-tab{width:100%; border-collapse:collapse; font-size:13px}
+.lv-tab th{
+  font-size:11px; font-weight:600; letter-spacing:.07em; text-transform:uppercase; color:var(--lv-ink3);
+  text-align:left; padding:0 10px 10px; white-space:nowrap;
+}
+.lv-tab td{padding:11px 10px; border-top:1px solid var(--lv-line); white-space:nowrap}
+.lv-tab .num{text-align:right; font-variant-numeric:tabular-nums}
+.lv-tab tbody tr{transition:background var(--lv-t-fast) var(--lv-ease)}
+.lv-tab tbody tr:hover{background:var(--lv-raised)}
+.lv-mini{display:inline-block; vertical-align:middle; width:90px; height:6px; border-radius:3px; background:var(--lv-raised); overflow:hidden; margin-right:8px}
+.lv-mini i{display:block; height:100%; border-radius:3px; background:var(--lv-navy-pale)}
+.lv-mini i.meta{background:var(--lv-gold)}
+
+/* dica dos gráficos: um elemento só, segue o mouse */
+.lv-dica{
+  position:fixed; z-index:50; pointer-events:none; transform:translate(12px,12px);
+  background:var(--lv-raised); border:1px solid var(--lv-line-strong); border-radius:var(--lv-r-sm);
+  padding:6px 10px; font-size:12px; color:var(--lv-ink2); opacity:0; transition:opacity var(--lv-t-fast) var(--lv-ease);
+}
+.lv-dica b{display:block; color:var(--lv-ink); font-size:13px}
+.lv-dica.ve{opacity:1}
+
+.lv-rodape{display:flex; align-items:center; gap:10px; margin-top:40px; font-size:11.5px; color:var(--lv-ink3)}
+.lv-rodape code{font:500 10.5px var(--lv-mono); border:1px solid var(--lv-line); border-radius:var(--lv-r-xs); padding:1px 6px}
+
+/* ==========================================================================
+   MOVIMENTO — tudo dentro de no-preference
+   A tela entra em cascata uma vez (classe .is-entering, removida em ~2 s para
+   que filtrar ou ordenar não repita nada). Números contam via JS.
+   ========================================================================== */
+@media (prefers-reduced-motion:no-preference){
+  @keyframes lv-card-in{from{opacity:0; transform:translateY(14px) scale(.97)}}
+  @keyframes lv-el-in{from{opacity:0; transform:translateY(8px)}}
+  @keyframes lv-sobe{from{transform:scaleY(0)}}
+  @keyframes lv-cresce{from{transform:scaleX(0)}}
+  @keyframes lv-aparece{from{opacity:0}}
+  @keyframes lv-arco{from{stroke-dasharray:0 var(--C); opacity:0}}
+  @keyframes lv-led{to{stroke-dashoffset:-100}}
+  @keyframes lv-fundo-in{from{opacity:0}}
+
+  .lv-fundo{animation:lv-fundo-in 1.6s var(--lv-ease) both}
+  .lv-beam rect{animation:lv-led var(--dur,6s) linear infinite}
+
+  .lv-view.is-entering [data-lv-item]{
+    animation:lv-card-in var(--lv-t-slow) var(--lv-spring) backwards;
+    animation-delay:calc(var(--i,0) * 55ms);
+  }
+  .lv-view.is-entering [data-lv-el]{
+    animation:lv-el-in var(--lv-t-slow) var(--lv-ease) backwards;
+    animation-delay:calc(var(--i,0) * 55ms);
+  }
+  .lv-view.is-entering .lv-bar{
+    animation:lv-sobe .75s var(--lv-ease) both;
+    animation-delay:calc(var(--i,0) * 55ms + var(--j,0) * 45ms + .12s);
+  }
+  .lv-view.is-entering .lv-rotv{
+    animation:lv-aparece .4s ease both;
+    animation-delay:calc(var(--i,0) * 55ms + var(--j,0) * 45ms + .6s);
+  }
+  .lv-view.is-entering .lv-ring,.lv-view.is-entering .lv-arc{
+    animation:lv-arco 1s var(--lv-ease) both;
+    animation-delay:calc(var(--i,0) * 55ms + .2s + var(--j,0) * 140ms);
+  }
+  .lv-view.is-entering .lv-rank-l .t i{
+    animation:lv-cresce .75s var(--lv-ease) both;
+    animation-delay:calc(var(--i,0) * 55ms + var(--j,0) * 55ms + .15s);
+  }
+  .lv-mini i{transition:width .75s var(--lv-ease)}
+}
+@media (prefers-reduced-motion:reduce){
+  .lv-beam{display:none}
+  .lv-vivo,.lv-vivo *{transition:none!important}
+  .lv-vivo:hover{transform:none}
+}
+
+
+@media (max-width:480px){.lv-marca span{display:none}.lv-cab-in{padding:12px 16px}}
+/* ---- site LUVI BI ---- */
+html{scroll-behavior:smooth; scroll-padding-top:84px}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+.lv-cab-in{gap:18px}
+.nav-links{display:none; gap:4px; margin-left:12px}
+.nav-links a{font-size:13px; font-weight:500; color:var(--lv-ink2); text-decoration:none; padding:7px 12px; border-radius:var(--lv-r-sm); transition:background var(--lv-t-fast) var(--lv-ease),color var(--lv-t-fast) var(--lv-ease)}
+.nav-links a:hover{background:var(--lv-raised); color:var(--lv-ink)}
+@media (min-width:720px){.nav-links{display:flex}}
+.lv-botao{
+  display:inline-flex; align-items:center; justify-content:center; gap:9px; min-height:40px; padding:0 18px;
+  font:600 13.5px/1 var(--lv-sans); text-decoration:none; cursor:pointer; color:#fff;
+  background:var(--lv-navy); border:1px solid var(--lv-navy-light); border-radius:var(--lv-r-sm);
+  transition:background var(--lv-t-fast) var(--lv-ease),border-color var(--lv-t-fast) var(--lv-ease),transform var(--lv-t-fast) var(--lv-ease);
+}
+.lv-botao svg{width:16px; height:16px}
+.lv-botao:hover{background:var(--lv-navy-light); border-color:var(--lv-navy-pale)}
+.lv-botao:active{transform:scale(.97)}
+.lv-botao.sec{background:var(--lv-surface); color:var(--lv-ink); border-color:var(--lv-line-strong)}
+.lv-botao.sec:hover{background:var(--lv-raised); border-color:var(--lv-line-strong)}
+.lv-botao:focus-visible,.nav-links a:focus-visible,.painel-abrir:focus-visible,button.lv-nav:focus-visible{outline:2px solid var(--lv-gold); outline-offset:2px}
+.hero{padding:clamp(8px,3vw,28px) 0 8px; max-width:720px}
+.hero .lv-titulo{font-size:clamp(30px,5vw,44px); line-height:1.1; margin-bottom:14px}
+.hero .lv-sub{font-size:16px; max-width:56ch}
+.hero-acoes{display:flex; flex-wrap:wrap; gap:10px; margin-top:26px}
+.hero-nota{display:flex; align-items:center; gap:9px; margin-top:22px; font-size:12.5px; color:var(--lv-ink3)}
+.hero-nota svg{width:16px; height:16px; color:var(--lv-ink2); flex:0 0 auto}
+.lv-g-nav button.lv-card{font:inherit; color:inherit; width:100%}
+button.lv-nav[aria-pressed="true"]{border-color:var(--lv-navy-pale)}
+button.lv-nav[aria-pressed="true"]::before{transform:scaleX(1)}
+.painel{margin-top:12px; padding:0}
+.painel[hidden]{display:none}
+.painel-cab{display:flex; align-items:center; gap:10px; padding:14px 18px; border-bottom:1px solid var(--lv-line); flex-wrap:wrap}
+.painel-abrir{margin-left:auto; display:inline-flex; align-items:center; gap:7px; font-size:12.5px; color:var(--lv-ink2); text-decoration:none; transition:color var(--lv-t-fast) var(--lv-ease)}
+.painel-abrir svg{width:14px; height:14px}
+.painel-abrir:hover{color:var(--lv-gold)}
+.pbi{display:block; width:100%; height:560px; border:0; background:#fff}
+@media (max-width:640px){.pbi{height:480px}}
+.painel-itens{list-style:none; margin:0; padding:14px 18px 18px; display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:8px 18px; border-top:1px solid var(--lv-line)}
+.painel-itens li{display:flex; align-items:center; gap:9px; font-size:12.5px; color:var(--lv-ink2)}
+.painel-itens li::before{content:""; width:5px; height:5px; border-radius:50%; background:var(--lv-gold); flex:0 0 auto}
+.passos{list-style:none; margin:0; padding:0; display:grid; gap:12px; grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
+.passo{display:flex; align-items:flex-start; gap:16px; padding:18px}
+.passo-n{width:34px; height:34px; font:700 14px var(--lv-sans); font-feature-settings:'tnum' 1}
+.passo-d{margin:4px 0 0; font-size:13px; line-height:1.6; color:var(--lv-ink2); max-width:62ch}
+.contato{display:flex; flex-direction:column; gap:20px; padding:28px}
+@media (min-width:760px){.contato{flex-direction:row; align-items:center; justify-content:space-between}}
+.contato .lv-titulo{font-size:24px; margin-bottom:6px}
+.contato .lv-sub{max-width:46ch}
+.contato-acoes{display:flex; flex-wrap:wrap; gap:10px}
+.lv-rodape{margin-top:48px; padding-top:20px; border-top:1px solid var(--lv-line); flex-wrap:wrap}
+
+</style>
+</head>
+<body class="lv">
+<div class="lv-conteudo">
+
+  <header class="lv-cab">
+    <div class="lv-cab-in">
+      <a class="lv-marca" href="#topo" aria-label="LUVI BI, início" style="text-decoration:none;color:inherit">
+        <svg viewBox="0 0 245 310" aria-hidden="true"><rect x="5" y="120" width="55" height="150" fill="#fff"/><rect x="90" y="70" width="55" height="200" fill="#fff"/><rect x="175" y="35" width="55" height="235" fill="#fff"/><path d="M30,100 L115,50 L200,15" stroke="#F0C811" stroke-width="9" stroke-linecap="round" fill="none"/><circle cx="30" cy="100" r="16" fill="#F0C811"/><circle cx="115" cy="50" r="16" fill="#F0C811"/><circle cx="200" cy="15" r="16" fill="#F0C811"/></svg>
+        <div><b>LUVI BI</b><span>Consultoria Power BI e Dados</span></div>
+      </a>
+      <nav class="nav-links" aria-label="Seções">
+        <a href="#paineis">Painéis</a>
+        <a href="#processo">Como trabalhamos</a>
+        <a href="#contato">Contato</a>
+      </nav>
+      <span class="lv-esp"></span>
+      <a class="lv-botao" href="#contato">Fale conosco</a>
+    </div>
+  </header>
+
+  <main class="lv-pag lv-view" id="topo">
+
+    <section class="hero" data-lv-el>
+      <h1 class="lv-titulo">Tenha sua gestão na palma da mão</h1>
+      <p class="lv-sub">Monitore seus negócios a qualquer hora, em qualquer lugar. A LUVI BI transforma seus dados em dashboards que cabem no seu bolso.</p>
+      <div class="hero-acoes">
+        <a class="lv-botao" href="#paineis">Ver painéis ao vivo</a>
+        <a class="lv-botao sec" href="#contato">Fale conosco</a>
+      </div>
+      <p class="hero-nota"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="14" height="20" x="5" y="2" rx="2" ry="2"/><path d="M12 18h.01"/></svg>Seus indicadores em tempo real, no computador, no tablet ou no celular.</p>
+    </section>
+
+    <div class="lv-secao" id="paineis" data-lv-el><svg viewBox="0 0 46 16" aria-hidden="true"><path d="M2,13 L15,9 L28,9.5 L42,3" fill="none" stroke="#F0C811" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="2" cy="13" r="2.2" fill="#F0C811"/><circle cx="15" cy="9" r="2.2" fill="#F0C811"/><circle cx="28" cy="9.5" r="2.2" fill="#F0C811"/><circle cx="42" cy="3" r="2.2" fill="#F0C811"/></svg>Painéis demonstrativos</div>
+    <p class="lv-sub" data-lv-el style="margin-bottom:16px">Use os filtros, escolha períodos e navegue pelos dados, do mesmo jeito que sua equipe faria no dia a dia.</p>
+
+    <section class="lv-grade lv-g-nav" aria-label="Escolha um painel">
+      <button type="button" class="lv-card lv-vivo lv-nav" data-lv-item data-lv-beam data-painel="vendas" aria-pressed="true" aria-controls="painel-vendas">
+        <span class="lv-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg></span>
+        <span class="lv-nav-tx"><b>Relatório de Vendas</b><span>Faturamento, ticket médio e ranking</span></span>
+        <svg class="lv-seta" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+      </button>
+      <button type="button" class="lv-card lv-vivo lv-nav" data-lv-item data-lv-beam data-painel="financeiro" aria-pressed="false" aria-controls="painel-financeiro">
+        <span class="lv-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1"/><path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"/></svg></span>
+        <span class="lv-nav-tx"><b>Dashboard Financeiro</b><span>DRE, margem e custos por categoria</span></span>
+        <svg class="lv-seta" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+      </button>
+      <button type="button" class="lv-card lv-vivo lv-nav" data-lv-item data-lv-beam data-painel="estoque" aria-pressed="false" aria-controls="painel-estoque">
+        <span class="lv-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg></span>
+        <span class="lv-nav-tx"><b>Controle de Estoque</b><span>Entradas, saídas e giro por produto</span></span>
+        <svg class="lv-seta" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+      </button>
+    </section>
+
+    <article class="lv-card painel" id="painel-vendas" >
+      <header class="painel-cab">
+        <h3 class="lv-card-t">Relatório de Vendas</h3>
+        <span class="lv-badge">Comercial</span>
+        <a class="painel-abrir" href="https://app.powerbi.com/view?r=eyJrIjoiN2Q1NjMwODQtZjM2YS00NmMwLWFjMGEtMWJhYmZmY2ViYzAwIiwidCI6IjVkODBhYzkwLTllOTQtNGRjYi1iYzE4LTRiYjA1M2M2M2Y1ZCJ9" target="_blank" rel="noopener">Abrir em tela cheia <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg></a>
+      </header>
+      <iframe class="pbi" src="https://app.powerbi.com/view?r=eyJrIjoiN2Q1NjMwODQtZjM2YS00NmMwLWFjMGEtMWJhYmZmY2ViYzAwIiwidCI6IjVkODBhYzkwLTllOTQtNGRjYi1iYzE4LTRiYjA1M2M2M2Y1ZCJ9" title="Relatório de Vendas" allowfullscreen="true" loading="lazy"></iframe>
+      <ul class="painel-itens"><li>Faturamento total e ticket médio</li><li>Evolução mensal de vendas</li><li>Ranking de produtos por receita</li><li>Desempenho por vendedor</li><li>Mapa geográfico de faturamento</li><li>Filtros por filial e produto</li></ul>
+    </article>
+    <article class="lv-card painel" id="painel-financeiro" hidden>
+      <header class="painel-cab">
+        <h3 class="lv-card-t">Dashboard Financeiro</h3>
+        <span class="lv-badge">Financeiro</span>
+        <a class="painel-abrir" href="https://app.powerbi.com/view?r=eyJrIjoiNmM2NDA1ODMtODczMS00ZjI1LWE0MTItMjM0OGRjOWE5YmIwIiwidCI6IjVkODBhYzkwLTllOTQtNGRjYi1iYzE4LTRiYjA1M2M2M2Y1ZCJ9" target="_blank" rel="noopener">Abrir em tela cheia <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg></a>
+      </header>
+      <iframe class="pbi" data-src="https://app.powerbi.com/view?r=eyJrIjoiNmM2NDA1ODMtODczMS00ZjI1LWE0MTItMjM0OGRjOWE5YmIwIiwidCI6IjVkODBhYzkwLTllOTQtNGRjYi1iYzE4LTRiYjA1M2M2M2Y1ZCJ9" title="Dashboard Financeiro" allowfullscreen="true" loading="lazy"></iframe>
+      <ul class="painel-itens"><li>Faturamento, custos e resultado</li><li>Margem líquida percentual</li><li>Evolução mês a mês</li><li>Custos fixos vs variáveis</li><li>Análise por centro de custo</li><li>Filtros por data e categoria</li></ul>
+    </article>
+    <article class="lv-card painel" id="painel-estoque" hidden>
+      <header class="painel-cab">
+        <h3 class="lv-card-t">Controle de Estoque</h3>
+        <span class="lv-badge">Operações</span>
+        <a class="painel-abrir" href="https://app.powerbi.com/view?r=eyJrIjoiNmY0MjVlMGQtMDA2Ny00NjFkLWI3NzgtZDcyYjVmZDM0ZDIzIiwidCI6IjVkODBhYzkwLTllOTQtNGRjYi1iYzE4LTRiYjA1M2M2M2Y1ZCJ9" target="_blank" rel="noopener">Abrir em tela cheia <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg></a>
+      </header>
+      <iframe class="pbi" data-src="https://app.powerbi.com/view?r=eyJrIjoiNmY0MjVlMGQtMDA2Ny00NjFkLWI3NzgtZDcyYjVmZDM0ZDIzIiwidCI6IjVkODBhYzkwLTllOTQtNGRjYi1iYzE4LTRiYjA1M2M2M2Y1ZCJ9" title="Controle de Estoque" allowfullscreen="true" loading="lazy"></iframe>
+      <ul class="painel-itens"><li>Entradas e saídas em R$ e unidades</li><li>Posição atual por produto</li><li>Giro de estoque por trimestre</li><li>Evolução mensal de estoque</li><li>Tabela por categoria</li><li>Filtros por data e produto</li></ul>
+    </article>
+
+    <div class="lv-secao" id="processo" data-lv-el>Como trabalhamos</div>
+    <p class="lv-sub" data-lv-el style="margin-bottom:16px">Um processo simples e claro, do primeiro contato à entrega final.</p>
+    <ol class="passos">
+      <li class="lv-card passo" data-lv-item>
+        <span class="lv-ic passo-n">1</span>
+        <div><h3 class="lv-card-t">Conversa inicial</h3><p class="passo-d">Entendemos sua operação, onde estão os dados e quais decisões precisam ser tomadas com mais clareza e velocidade.</p></div>
+      </li>
+      <li class="lv-card passo" data-lv-item>
+        <span class="lv-ic passo-n">2</span>
+        <div><h3 class="lv-card-t">Proposta e escopo</h3><p class="passo-d">Apresentamos uma proposta clara com o que será entregue, prazo e investimento, sem letras miúdas.</p></div>
+      </li>
+      <li class="lv-card passo" data-lv-item>
+        <span class="lv-ic passo-n">3</span>
+        <div><h3 class="lv-card-t">Conexão e modelagem de dados</h3><p class="passo-d">Integramos suas fontes (ERP, planilhas, banco de dados) e construímos um modelo confiável e escalável.</p></div>
+      </li>
+      <li class="lv-card passo" data-lv-item>
+        <span class="lv-ic passo-n">4</span>
+        <div><h3 class="lv-card-t">Entrega do painel e treinamento</h3><p class="passo-d">Entregamos o dashboard funcionando e treinamos sua equipe para usar com total autonomia.</p></div>
+      </li>
+      <li class="lv-card passo" data-lv-item>
+        <span class="lv-ic passo-n">5</span>
+        <div><h3 class="lv-card-t">Suporte e evolução</h3><p class="passo-d">Oferecemos suporte pós-entrega e planos de manutenção para que seus relatórios evoluam junto com o negócio.</p></div>
+      </li>
+    </ol>
+
+    <div class="lv-secao" id="contato" data-lv-el>Contato</div>
+    <section class="lv-card contato" data-lv-item>
+      <div>
+        <h2 class="lv-titulo">Pronto para ter o controle na mão?</h2>
+        <p class="lv-sub">Fale com a gente e descubra como transformar seus dados em decisões mais rápidas e seguras.</p>
+      </div>
+      <div class="contato-acoes">
+        <a class="lv-botao" href="https://wa.me/5548991390796" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg>WhatsApp</a>
+        <a class="lv-botao sec" href="mailto:contato@luvibi.com.br"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>E-mail</a>
+        <a class="lv-botao sec" href="https://www.instagram.com/luvibi_/" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="20" height="20" x="2" y="2" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/></svg>Instagram</a>
+      </div>
+    </section>
+
+    <footer class="lv-rodape">
+      <code>LUVI BI</code>
+      <span>© 2026 LUVI BI. Consultoria Power BI e Dados.</span>
+    </footer>
+  </main>
+</div>
+
+<script>
+/* ==========================================================================
+   LUVI BI — kit de movimento v1.2
+   Sem dependências. API: LuviKit.enter(root), .count(root), .beams(root),
+   .dica(), .charts.{bars,donut,ring,ranking}, .fmt.{compacto,inteiro}
+   ========================================================================== */
+(function (global) {
+  "use strict";
+
+  var reduz = function () { return matchMedia("(prefers-reduced-motion:reduce)").matches; };
+  var NS = "http://www.w3.org/2000/svg";
+  var esc = function (s) {
+    return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; });
+  };
+
+  /* ---------- formatos ---------- */
+  var fInt = new Intl.NumberFormat("pt-BR");
+  var fC0 = new Intl.NumberFormat("pt-BR", { notation: "compact", maximumFractionDigits: 0 });
+  var fC1 = new Intl.NumberFormat("pt-BR", { notation: "compact", maximumFractionDigits: 1 });
+  var fmt = {
+    inteiro: function (v) { return fInt.format(Math.round(v)); },
+    /* rótulo de gráfico arredondado: 3,8 mil / 200 mil; a tabela continua exata */
+    compacto: function (v) {
+      if (v == null || !isFinite(v)) return "—";
+      return Math.abs(v) >= 1000 ? fC1.format(v) : fInt.format(Math.round(v));
+    }
+  };
+
+  /* ---------- números que contam de zero ----------
+     Lê o número que já está no DOM (formato pt-BR). Se a animação não rodar
+     (aba em segundo plano, movimento reduzido), o valor final certo já está
+     na tela. Conta uma vez por entrada de tela; abaixo de 3 não há o que contar. */
+  var NUM = /^(\D*?)(-?[\d.]+(?:,\d+)?)(\D*)$/;
+  var DUR = 700;
+
+  function conta(el) {
+    var no = el.firstChild;
+    if (!no || no.nodeType !== 3) return;
+    var original = el._lvFinal || no.nodeValue; el._lvFinal = original;
+    var m = NUM.exec(original.trim());
+    if (!m) return;
+    var alvo = Number(m[2].replace(/\./g, "").replace(",", "."));
+    if (!isFinite(alvo) || Math.abs(alvo) < 3) return;
+    var casas = (m[2].split(",")[1] || "").length;
+    var f = new Intl.NumberFormat("pt-BR", { minimumFractionDigits: casas, maximumFractionDigits: casas });
+    var t0 = performance.now();
+    (function passo(agora) {
+      var k = Math.min(1, (agora - t0) / DUR);
+      no.nodeValue = k < 1 ? m[1] + f.format(alvo * (1 - Math.pow(1 - k, 3))) + m[3] : original;
+      if (k < 1) requestAnimationFrame(passo);
+    })(t0);
+  }
+
+  var io = null;
+  function count(root) {
+    root = root || document;
+    if (reduz()) return;
+    if (!io && "IntersectionObserver" in global) {
+      io = new IntersectionObserver(function (es) {
+        es.forEach(function (e) {
+          if (!e.isIntersecting) return;
+          io.unobserve(e.target); conta(e.target);
+        });
+      }, { threshold: 0.35 });
+    }
+    root.querySelectorAll("[data-lv-count]").forEach(function (el) {
+      if (io) io.observe(el); else conta(el);
+    });
+  }
+
+  /* ---------- entrada da tela ---------- */
+  function enter(root) {
+    root = root || document.querySelector(".lv-view");
+    if (!root) return;
+    var n = 0;
+    root.querySelectorAll("[data-lv-item],[data-lv-el]").forEach(function (el) {
+      el.style.setProperty("--i", Math.min(n++, 12));
+    });
+    root.classList.remove("is-entering");
+    void root.offsetWidth;
+    root.classList.add("is-entering");
+
+    /* barrinhas de tabela: zera e cresce até o valor (dois frames para o navegador registrar o 0) */
+    var largs = root.querySelectorAll("[data-larg]");
+    if (reduz()) {
+      largs.forEach(function (el) { el.style.width = el.dataset.larg + "%"; });
+    } else {
+      largs.forEach(function (el) { el.style.width = "0"; });
+      requestAnimationFrame(function () {
+        requestAnimationFrame(function () {
+          largs.forEach(function (el) { el.style.width = el.dataset.larg + "%"; });
+        });
+      });
+    }
+    clearTimeout(root._lvT);
+    root._lvT = setTimeout(function () { root.classList.remove("is-entering"); }, 2200);
+    count(root);
+  }
+
+  /* ---------- traço de luz (LED) nas bordas dos cards de navegação ----------
+     rect com pathLength=100: velocidade constante em qualquer proporção.
+     Cada card gira numa velocidade: 6s, 9,5s, 13s, 16,5s... */
+  function beams(root) {
+    root = root || document;
+    if (reduz()) return;
+    root.querySelectorAll("[data-lv-beam]").forEach(function (card, i) {
+      if (card._lvBeam) return;
+      var svg = document.createElementNS(NS, "svg");
+      svg.setAttribute("class", "lv-beam"); svg.setAttribute("aria-hidden", "true");
+      var r = document.createElementNS(NS, "rect");
+      r.setAttribute("pathLength", "100");
+      r.style.setProperty("--dur", (6 + 3.5 * i) + "s");
+      svg.appendChild(r); card.appendChild(svg); card._lvBeam = true;
+      var ajusta = function () {
+        var w = card.clientWidth, h = card.clientHeight;
+        var raio = parseFloat(getComputedStyle(card).borderTopLeftRadius) || 0;
+        r.setAttribute("x", .75); r.setAttribute("y", .75);
+        r.setAttribute("width", Math.max(0, w - 1.5)); r.setAttribute("height", Math.max(0, h - 1.5));
+        r.setAttribute("rx", Math.max(0, raio - .75));
+      };
+      ajusta();
+      if ("ResizeObserver" in global) new ResizeObserver(ajusta).observe(card);
+    });
+  }
+
+  /* ---------- dica dos gráficos: um elemento que segue o mouse ---------- */
+  function dica() {
+    if (document.querySelector(".lv-dica")) return;
+    var d = document.createElement("div");
+    d.className = "lv-dica"; d.setAttribute("role", "status");
+    document.body.appendChild(d);
+    document.addEventListener("mousemove", function (e) {
+      var a = e.target.closest && e.target.closest("[data-tip]");
+      if (!a) { d.classList.remove("ve"); return; }
+      d.innerHTML = esc(a.dataset.tip) + (a.dataset.tipv ? "<b>" + esc(a.dataset.tipv) + "</b>" : "");
+      d.style.left = e.clientX + "px"; d.style.top = e.clientY + "px";
+      d.classList.add("ve");
+    });
+  }
+
+  /* ---------- gráficos SVG (strings; entram no innerHTML do card) ---------- */
+  var f = function (n) { return (+n).toFixed(1); };
+
+  /* itens: [{rot, v, destaque?, parcial?}] ; unidade: texto da dica */
+  function bars(itens, o) {
+    o = o || {};
+    var W = o.w || 560, H = o.h || 220, pad = { l: 8, r: 8, t: 22, b: 26 };
+    var base = H - pad.b, util = base - pad.t;
+    var max = Math.max.apply(null, itens.map(function (i) { return i.v; })) || 1;
+    var slot = (W - pad.l - pad.r) / itens.length, bw = Math.min(46, slot * .56);
+    var grade = [0, .5, 1].map(function (g) {
+      var y = base - util * g;
+      return '<line class="lv-grade-l" x1="' + pad.l + '" x2="' + (W - pad.r) + '" y1="' + f(y) + '" y2="' + f(y) + '"/>';
+    }).join("");
+    var cols = itens.map(function (it, i) {
+      var h = Math.max(2, it.v / max * util), x = pad.l + slot * i + (slot - bw) / 2, y = base - h;
+      return '<g class="lv-grp" style="--j:' + i + '">' +
+        '<rect class="lv-bar' + (it.destaque ? " destaque" : "") + (it.parcial ? " parcial" : "") + '" x="' + f(x) + '" y="' + f(y) +
+        '" width="' + f(bw) + '" height="' + f(h) + '" rx="' + Math.min(6, bw / 2) + '"/>' +
+        '<text class="lv-rotv" x="' + f(x + bw / 2) + '" y="' + f(y - 7) + '" text-anchor="middle">' + fmt.compacto(it.v) + '</text>' +
+        '<text x="' + f(x + bw / 2) + '" y="' + (base + 17) + '" text-anchor="middle">' + esc(it.rot) + '</text>' +
+        '<rect class="lv-hit" x="' + f(pad.l + slot * i) + '" y="' + pad.t + '" width="' + f(slot) + '" height="' + f(util) +
+        '" data-tip="' + esc(it.rot) + '" data-tipv="' + esc(fmt.inteiro(it.v) + (o.un ? " " + o.un : "") + (it.parcial ? " (dia em andamento)" : "")) + '"/></g>';
+    }).join("");
+    return '<svg class="lv-svg" viewBox="0 0 ' + W + " " + H + '" role="img" aria-label="' + esc(o.rotulo || "Gráfico de barras") + '">' + grade + cols + "</svg>";
+  }
+
+  /* partes: [{rot, v, cor}] */
+  function donut(partes, centro, o) {
+    o = o || {};
+    var R = 54, C = 2 * Math.PI * R, sz = o.tam || 148;
+    var tot = partes.reduce(function (a, p) { return a + p.v; }, 0) || 1;
+    var vivos = partes.filter(function (p) { return p.v > 0; }).length, gap = vivos > 1 ? 14 : 0, acc = 0;
+    var arcos = partes.map(function (p, idx) {
+      var len = Math.max(.1, p.v / tot * C - gap);
+      var s = p.v > 0 ? '<circle class="lv-arc" style="--C:' + C.toFixed(2) + ";--j:" + idx + '" cx="66" cy="66" r="' + R + '" stroke="' + p.cor +
+        '" stroke-width="14" transform="rotate(-90 66 66)" stroke-dasharray="' + len.toFixed(2) + " " + (C - len).toFixed(2) +
+        '" stroke-dashoffset="' + (-acc - gap / 2).toFixed(2) + '" data-tip="' + esc(p.rot) + '" data-tipv="' + esc(fmt.inteiro(p.v) + (o.un ? " " + o.un : "")) + '"/>' : "";
+      acc += p.v / tot * C; return s;
+    }).join("");
+    var leg = partes.map(function (p) {
+      return '<div><i style="background:' + p.cor + '"></i>' + esc(p.rot) + "<b>" + fmt.inteiro(p.v) + "</b></div>";
+    }).join("");
+    return '<div class="lv-rosca"><div class="lv-disco" style="width:' + sz + "px;height:" + sz + 'px">' +
+      '<svg class="lv-svg" width="' + sz + '" height="' + sz + '" viewBox="0 0 132 132" role="img" aria-label="' + esc(o.rotulo || "Gráfico de rosca") + '">' +
+      '<circle class="lv-trilho" cx="66" cy="66" r="' + R + '" stroke-width="14"/>' + arcos + "</svg>" +
+      '<div class="lv-meio"><div><b' + (centro.conta ? " data-lv-count" : "") + ">" + centro.grande + "</b><small>" + esc(centro.pequeno || "") + "</small></div></div></div>" +
+      '<div class="lv-leg">' + leg + "</div></div>";
+  }
+
+  /* anel de progresso: uma porcentagem só, grande no meio */
+  function ring(pct, o) {
+    o = o || {};
+    var R = 54, C = 2 * Math.PI * R, sz = o.tam || 96, len = Math.max(0, Math.min(1, pct / 100)) * C;
+    return '<div class="lv-disco" style="width:' + sz + "px;height:" + sz + 'px">' +
+      '<svg class="lv-svg" width="' + sz + '" height="' + sz + '" viewBox="0 0 132 132" role="img" aria-label="' + esc(o.rotulo || Math.round(pct) + "%") + '">' +
+      '<circle class="lv-trilho" cx="66" cy="66" r="' + R + '" stroke-width="13"/>' +
+      (len > 0 ? '<circle class="lv-ring" style="--C:' + C.toFixed(2) + '" cx="66" cy="66" r="' + R + '" stroke="' + (o.cor || "var(--lv-navy-pale)") +
+        '" stroke-width="13" transform="rotate(-90 66 66)" stroke-dasharray="' + len.toFixed(2) + " " + C.toFixed(2) + '"/>' : "") + "</svg></div>";
+  }
+
+  /* itens: [{rot, v, txt?}] ; a barra mais longa preenche a trilha */
+  function ranking(itens, o) {
+    o = o || {};
+    var max = Math.max.apply(null, itens.map(function (i) { return i.v; })) || 1;
+    return '<div class="lv-rank">' + itens.map(function (it, j) {
+      return '<div class="lv-rank-l" style="--j:' + j + '" data-tip="' + esc(it.rot) + '" data-tipv="' + esc(it.txt || fmt.inteiro(it.v)) + '">' +
+        '<span class="n">' + esc(it.rot) + '</span><span class="t"><i style="width:' + (it.v / max * 100).toFixed(1) + '%"></i></span>' +
+        '<span class="v">' + esc(it.txt || fmt.inteiro(it.v)) + "</span></div>";
+    }).join("") + "</div>";
+  }
+
+  global.LuviKit = {
+    enter: enter, count: count, beams: beams, dica: dica,
+    fmt: fmt, charts: { bars: bars, donut: donut, ring: ring, ranking: ranking }
+  };
+})(window);
+
+</script>
+<script>
+(function(){
+  var botoes=[].slice.call(document.querySelectorAll('[data-painel]'));
+  function abre(id){
+    botoes.forEach(function(b){ b.setAttribute('aria-pressed', b.dataset.painel===id ? 'true':'false'); });
+    document.querySelectorAll('.painel').forEach(function(p){ p.hidden = p.id!=='painel-'+id; });
+    var f=document.querySelector('#painel-'+id+' iframe');
+    if(f && !f.getAttribute('src')) f.setAttribute('src', f.dataset.src);
+  }
+  botoes.forEach(function(b){ b.addEventListener('click', function(){ abre(b.dataset.painel); }); });
+  if(window.LuviKit){ LuviKit.enter(document.querySelector('.lv-view')); LuviKit.beams(document); }
+})();
+</script>
+</body>
+</html>
