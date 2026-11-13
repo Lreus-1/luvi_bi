@@ -45,9 +45,9 @@
 <link rel="modulepreload" href="assets/moments/lib.js">
 <link rel="modulepreload" href="assets/moments/word-highlight/moment.js">
 <style>
-  /* the old site's gold rule above each heading, its tag pill and the white tile the logo sits on */
+  /* the old site's gold rule above each heading, its gold tag line and the white tile the logo sits on */
   .section-head h2::before { content: ""; display: block; width: 38px; height: 3px; background: #e6b53c; border-radius: 2px; margin-bottom: 16px; }
-  .hero__kicker { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 500; color: #f0c964; background: rgba(230,181,60,.16); border: 1px solid rgba(230,181,60,.34); padding: 5px 14px; border-radius: 999px; }
+  .hero__kicker { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 500; color: #f0c964; }
   .hero__kicker .dot { background: #e6b53c; }
   h1 em { font-style: normal; color: #f0c964; }
   .nav .logo-tile { padding: 4px 10px; }
@@ -63,7 +63,8 @@
   /* from 640px the live report replaces the still; a phone keeps the still and the full-screen link */
   html.pbi-live .pbi iframe { display: block; }
   html.pbi-live .pbi > img { display: none; }
-  @media (max-width: 639px) { .pbi { aspect-ratio: 700 / 552; } #processo .frame--fill { flex: none !important; height: auto; min-height: 0; aspect-ratio: 1 / 1; } #processo .rows > li { padding-block: 22px; } #processo .frame__img { object-position: 0 0; } }
+  @media (max-width: 639px) { .pbi { aspect-ratio: 700 / 552; } #processo .frame--fill { flex: none !important; height: 40svh; min-height: 0; } #processo .rows > li { padding-block: clamp(10px, 2.6svh, 22px); min-height: 22svh; } #processo .frame__img { object-position: 0 0; } }
+  @media (max-width: 380px) { .nav .brand-logo { height: 30px; } .nav .logo-tile { padding: 4px 8px; } .nav:not(.is-open) .nav__actions { display: none; } .nav:not(.is-open) .nav__toggle { margin-left: auto; } }
   #dados .panel { --p-h: 380px; --ground-bg: #234b73; --ground-surface: #2f5c87; --ground-ink: #f6f8fb; --ground-muted: #c3d0de; --ground-accent: #e6b53c; }
   @media (max-width: 639px) { #dados .panel { --p-h: 360px; } }
 </style>
