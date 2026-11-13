@@ -50,6 +50,15 @@
   .hero__kicker { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 500; color: #f0c964; }
   .hero__kicker .dot { background: #e6b53c; }
   h1 em { font-style: normal; color: #f0c964; }
+  /* the three reference sites show the dashboard in a device: a dark tablet bezel drawn over the edge of the picture and of the live report */
+  .hero__media::after, .pbi::after { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; z-index: 2;
+    box-shadow: inset 0 0 0 11px #0b1620, inset 0 0 0 12px rgba(255,255,255,.14); }
+  .hero__media { border-radius: 26px; }
+  @media (min-width: 640px) { #desafios .rows > li { min-height: 118px; align-content: start; } }
+  .pbi { border-radius: 22px; }
+  /* the old site's hero: navy gradient with a faint gold glow */
+  .hero.ground-inverse { background: radial-gradient(ellipse at 72% 38%, rgba(230,181,60,.12) 0%, transparent 58%), linear-gradient(135deg, #234b73 0%, #2f5c87 55%, #3d6a96 100%); }
+  .close__word { line-height: .9; overflow: visible; }
   .nav .logo-tile { padding: 4px 10px; }
   .nav .logo-tile .brand-logo { height: 38px; }
   /* the client's logo is a PNG with its own colours: on the dark footer it sits on a light tile */
@@ -63,7 +72,10 @@
   /* from 640px the live report replaces the still; a phone keeps the still and the full-screen link */
   html.pbi-live .pbi iframe { display: block; }
   html.pbi-live .pbi > img { display: none; }
-  @media (max-width: 639px) { .pbi { aspect-ratio: 700 / 552; } #processo .frame--fill { flex: none !important; height: 40svh; min-height: 0; } #processo .rows > li { padding-block: clamp(10px, 2.6svh, 22px); min-height: 22svh; } #processo .frame__img { object-position: 0 0; } }
+  /* every report loads when the page opens and sits at full size under the one on show, so swapping rows has no wait */
+  .pbi-stack { position: relative; }
+  html.pbi-live .pbi[hidden] { display: block; position: absolute; top: 0; left: 0; width: 100%; visibility: hidden; pointer-events: none; }
+  @media (max-width: 639px) { .pbi { aspect-ratio: 700 / 552; } #processo .frame--fill { flex: none !important; height: 40svh; min-height: 0; }  #processo .rows > li { padding-block: clamp(10px, 2.6svh, 22px); min-height: 22svh; } #desafios .rows > li { padding-block: clamp(10px, 2.6svh, 22px); min-height: 27svh; align-content: start; } #desafios .frame { aspect-ratio: 4 / 3 !important; } @media (max-height: 700px) { #desafios .rows > li { min-height: 18svh; } } #processo .frame__img, #desafios .frame__img { object-position: 0 0; } }
   @media (max-width: 380px) { .nav .brand-logo { height: 30px; } .nav .logo-tile { padding: 4px 8px; } .nav:not(.is-open) .nav__actions { display: none; } .nav:not(.is-open) .nav__toggle { margin-left: auto; } }
   #dados .panel { --p-h: 380px; --ground-bg: #234b73; --ground-surface: #2f5c87; --ground-ink: #f6f8fb; --ground-muted: #c3d0de; --ground-accent: #e6b53c; }
   @media (max-width: 639px) { #dados .panel { --p-h: 360px; } }
@@ -71,7 +83,7 @@
 </head>
 <body>
 <!-- type: service
-     deal: hero split (a dashboard still, cover-cropped), nav nav-centre, footer footer-dark, close close-word without the name (no photograph to show), rhythm dark-band (the data section), buttons block, mark: the client's own logo
+     deal: hero split (a dashboard still, cover-cropped), nav nav-centre, footer footer-dark, close close-word with the name across the wrap, rhythm dark-band (the data section), buttons block, mark: the client's own logo
      moments: word-highlight in its own statement section
      palette: the old site's own navy, gold and pale blue, with its DM Serif Display and Sora pair, at the client's request; hero, nav and footer on the navy, the rest on the pale ground -->
 
@@ -107,9 +119,29 @@
         </div>
       </div>
       <div class="hero__media span-7 start-6">
-        <img src="img/painel-vendas.png" srcset="img/painel-vendas-700.png 700w, img/painel-vendas.png 1100w" sizes="(max-width: 639px) 100vw, 737px" alt="Relatório de Vendas da LUVI BI: faturamento total, vendas por mês e faturamento por vendedor" style="--ly-pos: 0% 0%" width="1100" height="1069" fetchpriority="high" data-source="client" data-subject="o relatório de vendas da LUVI BI">
+        <img src="img/painel-vendas.png" srcset="img/painel-vendas-700.png 700w, img/painel-vendas.png 1100w" sizes="(max-width: 639px) 100vw, 737px" alt="Relatório de Vendas da LUVI BI: faturamento total, vendas por mês e faturamento por vendedor" style="--ly-pos: 0% 0%" width="1100" height="1250" fetchpriority="high" data-source="client" data-subject="o relatório de vendas da LUVI BI">
       </div>
     </div></div>
+  </section>
+
+  <section class="section ground-surface" id="desafios" style="--hm: 2" aria-labelledby="desafios-h">
+    <div class="wrap">
+      <div class="section-head">
+        <h2 id="desafios-h">Desafios de gerir sem dashboard</h2>
+        <p>Os problemas que levam uma empresa a procurar consultoria em Power BI.</p>
+      </div>
+      <div class="grid grid--top fill">
+        <ul class="rows span-5">
+          <li><span class="rows__name">Relatórios feitos à mão</span><p>Planilhas montadas a cada fechamento, com retrabalho e risco de erro.</p></li>
+          <li><span class="rows__name">Dados em sistemas separados</span><p>ERP, planilhas e bancos de dados, cada um com a sua versão do número.</p></li>
+          <li><span class="rows__name">Decisão sem número atualizado</span><p>A diretoria pede um indicador e a resposta leva dias.</p></li>
+          <li><span class="rows__name">Painel lento ou pouco confiável</span><p>Relatórios que demoram a abrir e deixam dúvida sobre o número.</p></li>
+        </ul>
+        <div class="frame frame--photo span-7 start-6" style="aspect-ratio: 1100 / 619">
+          <img class="frame__img" src="img/painel-financeiro.png" srcset="img/painel-financeiro-700.png 700w, img/painel-financeiro.png 1100w" sizes="(max-width: 639px) 200vw, 737px" loading="lazy" alt="Dashboard Financeiro da LUVI BI: faturamento, custos, resultado e margem líquida" width="1100" height="619" data-source="client" data-subject="o dashboard financeiro da LUVI BI">
+        </div>
+      </div>
+    </div>
   </section>
 
   <section class="section" id="paineis" style="--hm: 2" aria-labelledby="paineis-h">
@@ -124,7 +156,7 @@
           <li data-peek-to="financeiro" tabindex="0"><span class="rows__name">Dashboard Financeiro</span><p>Resultado, margem líquida, custos fixos e variáveis por centro de custo. <a class="link" href="https://app.powerbi.com/view?r=eyJrIjoiNmM2NDA1ODMtODczMS00ZjI1LWE0MTItMjM0OGRjOWE5YmIwIiwidCI6IjVkODBhYzkwLTllOTQtNGRjYi1iYzE4LTRiYjA1M2M2M2Y1ZCJ9" target="_blank" rel="noopener">Ver finanças em tela cheia</a></p><span class="rows__value">Financeiro</span></li>
           <li data-peek-to="estoque" tabindex="0"><span class="rows__name">Controle de Estoque</span><p>Entradas, saídas, posição por produto e giro de estoque por trimestre. <a class="link" href="https://app.powerbi.com/view?r=eyJrIjoiNmY0MjVlMGQtMDA2Ny00NjFkLWI3NzgtZDcyYjVmZDM0ZDIzIiwidCI6IjVkODBhYzkwLTllOTQtNGRjYi1iYzE4LTRiYjA1M2M2M2Y1ZCJ9" target="_blank" rel="noopener">Ver estoque em tela cheia</a></p><span class="rows__value">Operações</span></li>
         </ul>
-        <div class="span-7 start-6">
+        <div class="span-7 start-6 pbi-stack">
           <div class="pbi" data-peek-for="vendas"><img src="img/painel-vendas-m.png" alt="Relatório de Vendas da LUVI BI, versão para celular" width="700" height="552" loading="lazy" data-source="client" data-subject="o relatório de vendas da LUVI BI"><iframe title="Relatório de Vendas, painel Power BI ao vivo" data-src="https://app.powerbi.com/view?r=eyJrIjoiN2Q1NjMwODQtZjM2YS00NmMwLWFjMGEtMWJhYmZmY2ViYzAwIiwidCI6IjVkODBhYzkwLTllOTQtNGRjYi1iYzE4LTRiYjA1M2M2M2Y1ZCJ9" allowfullscreen></iframe></div>
           <div class="pbi" data-peek-for="financeiro" hidden><img src="img/painel-financeiro-m.png" alt="Dashboard Financeiro da LUVI BI, versão para celular" width="700" height="552" loading="lazy" data-source="client" data-subject="o dashboard financeiro da LUVI BI"><iframe title="Dashboard Financeiro, painel Power BI ao vivo" data-src="https://app.powerbi.com/view?r=eyJrIjoiNmM2NDA1ODMtODczMS00ZjI1LWE0MTItMjM0OGRjOWE5YmIwIiwidCI6IjVkODBhYzkwLTllOTQtNGRjYi1iYzE4LTRiYjA1M2M2M2Y1ZCJ9" allowfullscreen></iframe></div>
           <div class="pbi" data-peek-for="estoque" hidden><img src="img/painel-estoque-m.png" alt="Controle de Estoque da LUVI BI, versão para celular" width="700" height="552" loading="lazy" data-source="client" data-subject="o controle de estoque da LUVI BI"><iframe title="Controle de Estoque, painel Power BI ao vivo" data-src="https://app.powerbi.com/view?r=eyJrIjoiNmY0MjVlMGQtMDA2Ny00NjFkLWI3NzgtZDcyYjVmZDM0ZDIzIiwidCI6IjVkODBhYzkwLTllOTQtNGRjYi1iYzE4LTRiYjA1M2M2M2Y1ZCJ9" allowfullscreen></iframe></div>
@@ -179,6 +211,7 @@
         <div><h2 id="close-h">Chame a LUVI&nbsp;BI no WhatsApp</h2><p class="t-lead">Conte onde estão seus dados e qual decisão precisa de mais clareza.</p></div>
         <a class="btn btn--primary" href="https://wa.me/5548991390796" target="_blank" rel="noopener">Chamar no WhatsApp<svg class="m-arrow" viewBox="0 0 12 12" aria-hidden="true"><path class="m-arrow__stem" d="M1 6h8"/><path class="m-arrow__head" d="M4.5 2.5 8 6l-3.5 3.5"/></svg></a>
       </div>
+      <p class="close__word" aria-hidden="true">LUVI BI</p>
     </div>
     <div class="closing__links">
       <div class="grid">
@@ -201,16 +234,14 @@
 <script type="module" src="assets/layout/layout.js"></script>
 <script type="module" src="assets/diagrams/mount.js"></script>
 <script>
-  /* from 640px the Power BI reports run live, each loaded when its row is first shown, as the original tabs did;
+  /* from 640px the Power BI reports run live, all loaded when the page opens, so a swap shows no wait;
      a phone keeps the still of each report and the full-screen link, so it never loads three embeds */
   if (window.matchMedia('(min-width: 640px)').matches) {
     document.documentElement.classList.add('pbi-live');
     document.querySelectorAll('.pbi[data-peek-for]').forEach(function (box) {
       var f = box.querySelector('iframe[data-src]');
       if (!f) return;
-      var load = function () { if (!box.hidden && !f.src) f.src = f.dataset.src; };
-      load();
-      new MutationObserver(load).observe(box, { attributes: true, attributeFilter: ['hidden'] });
+      f.src = f.dataset.src;
     });
   }
 </script>
