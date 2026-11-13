@@ -51,9 +51,11 @@
   .hero__kicker .dot { background: #e6b53c; }
   h1 em { font-style: normal; color: #f0c964; }
   /* the three reference sites show the dashboard in a device: a dark tablet bezel drawn over the edge of the picture and of the live report */
-  .hero__media::after, .pbi::after { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; z-index: 2;
+  .hero__tablet { background: none; overflow: visible; border-radius: 0; }
+  .hero__tablet > img { object-fit: contain; object-position: 50% 50%; }
+  .hero__tablet::after { display: none; }
+  .pbi::after { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; z-index: 2;
     box-shadow: inset 0 0 0 11px #0b1620, inset 0 0 0 12px rgba(255,255,255,.14); }
-  .hero__media { border-radius: 26px; }
   @media (min-width: 640px) { #desafios .rows > li { min-height: 118px; align-content: start; } }
   .pbi { border-radius: 22px; }
   /* the old site's hero: navy gradient with a faint gold glow */
@@ -118,8 +120,8 @@
           <a class="btn btn--secondary" href="#paineis">Ver painéis ao vivo</a>
         </div>
       </div>
-      <div class="hero__media span-7 start-6">
-        <img src="img/painel-vendas.png" srcset="img/painel-vendas-700.png 700w, img/painel-vendas.png 1100w" sizes="(max-width: 639px) 100vw, 737px" alt="Relatório de Vendas da LUVI BI: faturamento total, vendas por mês e faturamento por vendedor" style="--ly-pos: 0% 0%" width="1100" height="1250" fetchpriority="high" data-source="client" data-subject="o relatório de vendas da LUVI BI">
+      <div class="hero__media hero__tablet span-7 start-6">
+        <img src="img/tablet-hero.png" srcset="img/tablet-hero-700.png 700w, img/tablet-hero.png 1100w" sizes="(max-width: 639px) 100vw, 737px" alt="Tablet mostrando um painel de vendas no Power BI, com volume, meta, faturamento, clientes ativos e gráficos por produto e região" width="1100" height="733" fetchpriority="high" data-source="client" data-subject="um tablet com um painel de vendas no Power BI">
       </div>
     </div></div>
   </section>
